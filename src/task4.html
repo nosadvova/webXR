@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Lab 5(4) - Model Placement</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="controls">
+    <div class="button-group-t1">
+      <button onclick="playClickSound()" id="materialRealisticBtn">Material: Realistic</button>
+      <button onclick="playClickSound()" id="materialGoldBtn">Material: Gold</button>
+      <button onclick="playClickSound()" id="materialGlowBtn">Material: Glow</button>
+      <button onclick="playClickSound()" id="materialGlassBtn">Material: Glass</button>
+      <button onclick="playClickSound()" id="materialChromeBtn">Material: Chrome</button>
+      <button onclick="playClickSound()" id="toggleDirectionalLightBtn">Directional Light: On</button>
+      <button onclick="playClickSound()" id="increaseLightIntensityBtn">Increase Light Intensity</button>
+      <button onclick="playClickSound()" id="decreaseLightIntensityBtn">Decrease Light Intensity</button>
+      <button onclick="playClickSound()" id="changeLightColorBtn">Change Light Color</button>
+      <button onclick="playClickSound()" id="toggleJumpBtn">Jump: On</button>
+      <button onclick="playClickSound()" id="toggleRotationBtn">Rotation: On</button>
+    </div>
+
+  </div>
+  <!-- <audio id="placeSound" src="/dinosaur-roar.mp3"></audio> -->
+  <audio id="button_click_audio" src="../public/assets/minecraft_click.mp3"></audio>
+  <script>
+    const baseAudio = document.getElementById('button_click_audio');
+
+    function playClickSound() {
+      const clone = baseAudio.cloneNode();
+      clone.volume = 1.0;
+      clone.play();
+    }
+  </script>
+  <script type="module" src="./task4.js"></script>
+</body>
+
+</html>

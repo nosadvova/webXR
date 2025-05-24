@@ -1,0 +1,98 @@
+@font-face {
+  font-family: "MinecraftFont";
+  src: url("../public/assets/MinecraftRegular-Bmg3.otf") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: Monospace;
+  font-size: 16px;
+  line-height: 24px;
+  overscroll-behavior: none;
+}
+a {
+  color: #ff0;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+canvas {
+  display: block;
+}
+a,
+button,
+input,
+select {
+  pointer-events: auto;
+}
+
+#controls {
+  position: fixed;
+  top: 70px;
+  left: 70px;
+}
+
+.button-group-t1,
+.task2-button-group {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: fit-content;
+}
+
+.task2-controls {
+  display: none;
+}
+
+.expanded {
+  display: block;
+}
+
+button,
+select {
+  background-color: #e7e7e7;
+  background-image: url("https://i.ibb.co/rb2TWXL/bgbtn.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply; /* <- NEW */
+  image-rendering: pixelated;
+  border: 2px solid #000;
+  box-sizing: border-box;
+  color: #ddd;
+  text-shadow: 2px 2px #000a;
+  box-shadow: inset -2px -4px #0006, inset 2px 2px #fff7;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1rem;
+  font-family: "MinecraftFont", sans-serif;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  width: auto;
+}
+
+button:hover,
+button:active {
+  background-color: rgb(168, 168, 233);
+  text-shadow: 2px 2px #202013cc;
+  color: #ffffa0;
+}
+
+button:focus {
+  outline: solid 2px rgb(111, 111, 181);
+  text-shadow: 2px 2px #202013cc;
+  color: #ffffa0;
+}
+
+#toggleControlsBtn {
+  background: #005800;
+  &:focus,
+  &:hover {
+    background: #006800;
+  }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Lab 5(3) - Cone Placement</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="controls">
+    <div class="button-group">
+      <button onclick="playClickSound()" id="changeColorBtn">Change Cone Color</button>
+      <div id="colorIndicator"></div>
+    </div>
+    <button onclick="playClickSound()" id="toggleRotationBtn">Toggle Rotation</button>
+    <div class="button-group">
+      <button onclick="playClickSound()" id="changeSizeBtn">Change Cone Size</button>
+      <span id="scaleIndicator">Current Scale: 1.0</span>
+    </div>
+    <button onclick="playClickSound()" id="toggleScaleAnimationBtn">Toggle Scale Animation</button>
+    <button onclick="playClickSound()" id="changeMaterialBtn">Change Material</button>
+  </div>
+  <!-- <audio id="placeSound" src="../glass-bottle-smash-229205.mp3"></audio> -->
+  <audio id="button_click_audio" src="../public/assets/minecraft_click.mp3"></audio>
+  <script>
+    const baseAudio = document.getElementById('button_click_audio');
+
+    function playClickSound() {
+      const clone = baseAudio.cloneNode();
+      clone.volume = 1.0;
+      clone.play();
+    }
+  </script>
+  <script type="module" src="./task3.js"></script>
+</body>
+
+</html>

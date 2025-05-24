@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Lab 5(1) - Interactive 3D Objects</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="controls">
+    <div class="button-group-t1">
+      <button onclick="playClickSound()" id="toggleRotationBtn">Disable
+        Rotation</button>
+      <button onclick="playClickSound()" id="togglePulseBtn">Disable
+        Pulse/Move</button>
+      <button onclick="playClickSound()" id="toggleColorBtn">Disable
+        Color/Emit</button>
+      <button onclick="playClickSound()" id="toggleSpeedBtn">Speed:
+        Normal</button>
+      <button onclick="playClickSound()" id="toggleTexturesBtn">Disable
+        Textures</button>
+      <button onclick="playClickSound()" id="toggleDirectionBtn">Direction:
+        Forward</button>
+      <button onclick="playClickSound()" id="specialEffectBtn">Special
+        Effect</button>
+    </div>
+  </div>
+  <audio id="button_click_audio" src="../public/assets/minecraft_click.mp3"></audio>
+  <script>
+    const baseAudio = document.getElementById('button_click_audio');
+
+    function playClickSound() {
+      const clone = baseAudio.cloneNode();
+      clone.volume = 1.0;
+      clone.play();
+    }
+  </script>
+  <script type="module" src="./task1.js"></script>
+</body>
+
+</html>
