@@ -1,17 +1,17 @@
-import * as THREE from "three";
+import * as THREE from "three"
 
-import { ARButton } from "three/addons/webxr/ARButton.js";
+import { ARButton } from "three/addons/webxr/ARButton.js"
 
-let container;
-let camera, scene, renderer;
-let reticle;
-let controller;
-let cones = [];
-let rotationEnabled = true;
-let scaleAnimationEnabled = true;
-let currentMaterialIndex = 0;
-let currentColor = 0x00ff00;
-let currentScale = 1.0;
+let container
+let camera, scene, renderer
+let reticle
+let controller
+let cones = []
+let rotationEnabled = true
+let scaleAnimationEnabled = true
+let currentMaterialIndex = 0
+let currentColor = 0x00ff00
+let currentScale = 1.0
 
 // Масив матеріалів
 const materials = [
@@ -39,17 +39,17 @@ const materials = [
     metalness: 0.2,
     roughness: 0.5,
   }), // Емітований
-];
+]
 
-init();
-animate();
+init()
+animate()
 
 function init() {
-  container = document.createElement("div");
-  document.body.appendChild(container);
+  container = document.createElement("div")
+  document.body.appendChild(container)
 
   // Сцена
-  scene = new THREE.Scene();
+  scene = new THREE.Scene()
 
   // Камера
   camera = new THREE.PerspectiveCamera(
@@ -57,231 +57,236 @@ function init() {
     window.innerWidth / window.innerHeight,
     0.01,
     20
-  );
+  )
 
   // Рендеринг
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.xr.enabled = true;
-  container.appendChild(renderer.domElement);
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.xr.enabled = true
+  container.appendChild(renderer.domElement)
 
   // Світло
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-  directionalLight.position.set(5, 5, 5);
-  scene.add(directionalLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
+  directionalLight.position.set(5, 5, 5)
+  scene.add(directionalLight)
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-  scene.add(ambientLight);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5)
+  scene.add(ambientLight)
 
   // Контролер для додавання об’єктів
-  controller = renderer.xr.getController(0);
-  controller.addEventListener("select", onSelect);
-  scene.add(controller);
+  controller = renderer.xr.getController(0)
+  controller.addEventListener("select", onSelect)
+  scene.add(controller)
 
   // Додаємо мітку поверхні
-  addReticleToScene();
+  addReticleToScene()
 
   // Налаштування AR-режиму з hit-test
   const button = ARButton.createButton(renderer, {
     requiredFeatures: ["hit-test"],
     onSessionStarted: () => {
-      renderer.domElement.style.background = "transparent";
-      document.getElementById("controls").style.display = "flex";
+      renderer.domElement.style.background = "transparent"
+      document.getElementById("controls").style.display = "flex"
     },
     onSessionEnded: () => {
-      document.getElementById("controls").style.display = "flex";
+      document.getElementById("controls").style.display = "flex"
     },
-  });
-  document.body.appendChild(button);
-  renderer.domElement.style.display = "block";
+  })
+  document.body.appendChild(button)
+  renderer.domElement.style.display = "block"
 
   // Додаємо Listener для кнопок
+  document.getElementById("backBtn").addEventListener("click", backToMenu)
   document
     .getElementById("changeColorBtn")
-    .addEventListener("click", changeConeColor);
+    .addEventListener("click", changeConeColor)
   document
     .getElementById("toggleRotationBtn")
-    .addEventListener("click", toggleRotation);
+    .addEventListener("click", toggleRotation)
   document
     .getElementById("changeSizeBtn")
-    .addEventListener("click", changeConeSize);
+    .addEventListener("click", changeConeSize)
   document
     .getElementById("toggleScaleAnimationBtn")
-    .addEventListener("click", toggleScaleAnimation);
+    .addEventListener("click", toggleScaleAnimation)
   document
     .getElementById("changeMaterialBtn")
-    .addEventListener("click", changeMaterial);
+    .addEventListener("click", changeMaterial)
 
   // Ініціалізуємо колір об'єкта color picker
-  updateColorIndicator(0x00ff00);
+  updateColorIndicator(0x00ff00)
 
-  window.addEventListener("resize", onWindowResize, false);
+  window.addEventListener("resize", onWindowResize, false)
 }
 
 function addReticleToScene() {
-  const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
+  const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2)
   const material = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
     transparent: true,
     opacity: 0.7,
-  });
+  })
 
-  reticle = new THREE.Mesh(geometry, material);
-  reticle.matrixAutoUpdate = false;
-  reticle.visible = false;
-  scene.add(reticle);
+  reticle = new THREE.Mesh(geometry, material)
+  reticle.matrixAutoUpdate = false
+  reticle.visible = false
+  scene.add(reticle)
 
-  reticle.add(new THREE.AxesHelper(0.5));
+  reticle.add(new THREE.AxesHelper(0.5))
 }
 
 function onSelect() {
   if (reticle.visible) {
-    const geometry = new THREE.ConeGeometry(0.1, 0.2, 32);
-    const material = materials[currentMaterialIndex].clone();
-    const cone = new THREE.Mesh(geometry, material);
-    material.color.setHex(currentColor);
+    const geometry = new THREE.ConeGeometry(0.1, 0.2, 32)
+    const material = materials[currentMaterialIndex].clone()
+    const cone = new THREE.Mesh(geometry, material)
+    material.color.setHex(currentColor)
 
-    cone.position.setFromMatrixPosition(reticle.matrix);
-    cone.quaternion.setFromRotationMatrix(reticle.matrix);
+    cone.position.setFromMatrixPosition(reticle.matrix)
+    cone.quaternion.setFromRotationMatrix(reticle.matrix)
 
-    cone.scale.set(currentScale, currentScale, currentScale);
-    let scaleUp = true;
+    cone.scale.set(currentScale, currentScale, currentScale)
+    let scaleUp = true
     cone.userData.animateScale = () => {
       if (scaleUp) {
-        cone.scale.multiplyScalar(1.05);
-        if (cone.scale.x >= currentScale) scaleUp = false;
+        cone.scale.multiplyScalar(1.05)
+        if (cone.scale.x >= currentScale) scaleUp = false
       } else {
-        cone.scale.multiplyScalar(0.95);
-        if (cone.scale.x <= currentScale * 0.5) scaleUp = true;
+        cone.scale.multiplyScalar(0.95)
+        if (cone.scale.x <= currentScale * 0.5) scaleUp = true
       }
-    };
+    }
 
-    cone.userData.rotationSpeed = 0.02;
+    cone.userData.rotationSpeed = 0.02
 
-    cones.push(cone);
-    scene.add(cone);
+    cones.push(cone)
+    scene.add(cone)
 
     // Відтворюємо звук при розміщенні
-    const placeSound = document.getElementById("placeSound");
-    placeSound.currentTime = 0;
-    placeSound.play();
+    const placeSound = document.getElementById("placeSound")
+    placeSound.currentTime = 0
+    placeSound.play()
   }
 }
 
+function backToMenu() {
+  setTimeout(() => {
+    window.location.href = "../index.html"
+  }, 600)
+}
+
 function updateColorIndicator(color) {
-  const colorIndicator = document.getElementById("colorIndicator");
+  const colorIndicator = document.getElementById("colorIndicator")
   // Перетворюємо числовий колір (наприклад, 0x123456) у шістнадцятковий рядок (#123456)
-  const hexColor = `#${(color & 0xffffff).toString(16).padStart(6, "0")}`;
-  colorIndicator.style.backgroundColor = hexColor;
+  const hexColor = `#${(color & 0xffffff).toString(16).padStart(6, "0")}`
+  colorIndicator.style.backgroundColor = hexColor
 }
 
 function changeConeColor() {
-  currentColor = Math.random() * 0xffffff;
+  currentColor = Math.random() * 0xffffff
   cones.forEach((cone) => {
-    cone.material.color.setHex(currentColor);
-  });
-  updateColorIndicator(currentColor);
+    cone.material.color.setHex(currentColor)
+  })
+  updateColorIndicator(currentColor)
 }
 
 function toggleRotation() {
-  rotationEnabled = !rotationEnabled;
+  rotationEnabled = !rotationEnabled
   document.getElementById("toggleRotationBtn").textContent = rotationEnabled
     ? "Disable Rotation"
-    : "Enable Rotation";
+    : "Enable Rotation"
 }
 
 function changeConeSize() {
-  currentScale = Math.random() * 0.5 + 0.5;
+  currentScale = Math.random() * 0.5 + 0.5
   cones.forEach((cone) => {
-    cone.scale.set(currentScale, currentScale, currentScale);
-  });
+    cone.scale.set(currentScale, currentScale, currentScale)
+  })
   document.getElementById(
     "scaleIndicator"
-  ).textContent = `Current Scale: ${currentScale.toFixed(2)}`;
+  ).textContent = `Current Scale: ${currentScale.toFixed(2)}`
 }
 
 function toggleScaleAnimation() {
-  scaleAnimationEnabled = !scaleAnimationEnabled;
+  scaleAnimationEnabled = !scaleAnimationEnabled
   document.getElementById("toggleScaleAnimationBtn").textContent =
-    scaleAnimationEnabled
-      ? "Disable Scale Animation"
-      : "Enable Scale Animation";
+    scaleAnimationEnabled ? "Disable Scale Animation" : "Enable Scale Animation"
 }
 
 function changeMaterial() {
-  currentMaterialIndex = (currentMaterialIndex + 1) % materials.length;
-  const newMaterial = materials[currentMaterialIndex].clone();
+  currentMaterialIndex = (currentMaterialIndex + 1) % materials.length
+  const newMaterial = materials[currentMaterialIndex].clone()
   cones.forEach((cone) => {
-    const currentColor = cone.material.color.getHex();
-    cone.material.dispose();
-    cone.material = newMaterial;
-    cone.material.color.setHex(currentColor);
-  });
+    const currentColor = cone.material.color.getHex()
+    cone.material.dispose()
+    cone.material = newMaterial
+    cone.material.color.setHex(currentColor)
+  })
   document.getElementById("changeMaterialBtn").textContent = `Material: ${
     ["Metallic", "Glass", "Emissive"][currentMaterialIndex]
-  }`;
+  }`
 }
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
 }
 
 function animate() {
-  renderer.setAnimationLoop(render);
+  renderer.setAnimationLoop(render)
 }
 
-let hitTestSource = null;
-let localSpace = null;
-let hitTestSourceInitialized = false;
+let hitTestSource = null
+let localSpace = null
+let hitTestSourceInitialized = false
 
 async function initializeHitTestSource() {
-  const session = renderer.xr.getSession();
-  const viewerSpace = await session.requestReferenceSpace("viewer");
-  hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
-  localSpace = await session.requestReferenceSpace("local");
+  const session = renderer.xr.getSession()
+  const viewerSpace = await session.requestReferenceSpace("viewer")
+  hitTestSource = await session.requestHitTestSource({ space: viewerSpace })
+  localSpace = await session.requestReferenceSpace("local")
 
-  hitTestSourceInitialized = true;
+  hitTestSourceInitialized = true
 
   session.addEventListener("end", () => {
-    hitTestSourceInitialized = false;
-    hitTestSource = null;
-  });
+    hitTestSourceInitialized = false
+    hitTestSource = null
+  })
 }
 
 function render(timestamp, frame) {
   if (frame) {
     if (!hitTestSourceInitialized) {
-      initializeHitTestSource();
+      initializeHitTestSource()
     }
 
     if (hitTestSourceInitialized) {
-      const hitTestResults = frame.getHitTestResults(hitTestSource);
+      const hitTestResults = frame.getHitTestResults(hitTestSource)
       if (hitTestResults.length > 0) {
-        const hit = hitTestResults[0];
-        const pose = hit.getPose(localSpace);
+        const hit = hitTestResults[0]
+        const pose = hit.getPose(localSpace)
 
-        reticle.visible = true;
-        reticle.matrix.fromArray(pose.transform.matrix);
+        reticle.visible = true
+        reticle.matrix.fromArray(pose.transform.matrix)
 
-        reticle.material.opacity = 0.7 + 0.3 * Math.sin(timestamp * 0.005);
-        reticle.material.color.setHSL((timestamp * 0.0005) % 1, 0.7, 0.5);
+        reticle.material.opacity = 0.7 + 0.3 * Math.sin(timestamp * 0.005)
+        reticle.material.color.setHSL((timestamp * 0.0005) % 1, 0.7, 0.5)
       } else {
-        reticle.visible = false;
+        reticle.visible = false
       }
     }
 
     cones.forEach((cone) => {
       if (scaleAnimationEnabled && cone.userData.animateScale) {
-        cone.userData.animateScale();
+        cone.userData.animateScale()
       }
       if (rotationEnabled) {
-        cone.rotation.y += cone.userData.rotationSpeed;
+        cone.rotation.y += cone.userData.rotationSpeed
       }
-    });
+    })
 
-    renderer.render(scene, camera);
+    renderer.render(scene, camera)
   }
 }
