@@ -96,3 +96,11 @@ button:focus {
     background: #006800;
   }
 }
+
+#menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+}

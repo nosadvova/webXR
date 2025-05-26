@@ -1,9 +1,13 @@
 // vite.config.js
-import mkcert from "vite-plugin-mkcert";
+import basicSsl from "@vitejs/plugin-basic-ssl"
 
 export default {
-  server: {
-    https: true,
-  },
-  plugins: [mkcert()],
-};
+  plugins: [
+    basicSsl({
+      /** name of certification */
+      name: "test",
+      /** custom trust domains */
+      domains: ["*.custom.com"],
+    }),
+  ],
+}
