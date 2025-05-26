@@ -1,5 +1,3 @@
-import "../public/style.css"
-
 document.getElementById("task1Btn").addEventListener("click", () => {
   setTimeout(() => {
     window.location.href = "/task1.html"

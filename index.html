@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Lab 5 - Menu</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR Lab 5 - Menu</title>
-  <link rel="stylesheet" href="src/style.css" />
-</head>
+  <body>
+    <div id="menu">
+      <h1>AR Lab 5</h1>
+      <button onclick="playClickSound()" id="task1Btn">Task 1</button>
+      <button onclick="playClickSound()" id="task2Btn">Task 2</button>
+      <button onclick="playClickSound()" id="task3Btn">Task 3</button>
+      <button onclick="playClickSound()" id="task4Btn">Task 4</button>
+    </div>
+    <audio id="button_click_audio" src="/minecraft_click.mp3"></audio>
+    <script>
+      const baseAudio = document.getElementById("button_click_audio")
 
-<body>
-  <div id="menu">
-    <h1>AR Lab 5</h1>
-    <button onclick="playClickSound()" id="task1Btn">Task 1</button>
-    <button onclick="playClickSound()" id="task2Btn">Task 2</button>
-    <button onclick="playClickSound()" id="task3Btn">Task 3</button>
-    <button onclick="playClickSound()" id="task4Btn">Task 4</button>
-  </div>
-  <audio id="button_click_audio" src="/assets/minecraft_click.mp3"></audio>
-  <script>
-    const baseAudio = document.getElementById('button_click_audio');
-
-    function playClickSound() {
-      console.log("playing")
-      const clone = baseAudio.cloneNode();
-      clone.volume = 1.0;
-      clone.play();
-    }
-  </script>
-  <script type="module" src="src/main.js"></script>
-</body>
-
+      function playClickSound() {
+        console.log("playing")
+        const clone = baseAudio.cloneNode()
+        clone.volume = 1.0
+        clone.play()
+      }
+    </script>
+    <script type="module" src="src/main.js"></script>
+  </body>
 </html>
