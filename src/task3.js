@@ -162,20 +162,13 @@ function onSelect() {
 
     cones.push(cone)
     scene.add(cone)
-
-    // Відтворюємо звук при розміщенні
-    const placeSound = document.getElementById("placeSound")
-    placeSound.currentTime = 0
-    placeSound.play()
   }
 }
-
 function backToMenu() {
   setTimeout(() => {
     window.location.href = "../index.html"
   }, 600)
 }
-
 function updateColorIndicator(color) {
   const colorIndicator = document.getElementById("colorIndicator")
   // Перетворюємо числовий колір (наприклад, 0x123456) у шістнадцятковий рядок (#123456)

@@ -231,13 +231,6 @@ function onSelect() {
         scene.add(model)
 
         console.log("Model added to scene at", model.position)
-
-        // Відтворюємо звук
-        const placeSound = document.getElementById("placeSound")
-        if (placeSound) {
-          placeSound.currentTime = 0
-          placeSound.play()
-        }
       },
       (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
