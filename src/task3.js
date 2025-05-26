@@ -143,8 +143,14 @@ function onSelect() {
     const cone = new THREE.Mesh(geometry, material)
     material.color.setHex(currentColor)
 
-    cone.position.setFromMatrixPosition(reticle.matrix)
-    cone.quaternion.setFromRotationMatrix(reticle.matrix)
+    const position = new THREE.Vector3()
+    const quaternion = new THREE.Quaternion()
+    const scale = new THREE.Vector3()
+
+    reticle.matrix.decompose(position, quaternion, scale)
+
+    cone.position.copy(position)
+    cone.quaternion.copy(quaternion)
 
     cone.scale.set(currentScale, currentScale, currentScale)
     let scaleUp = true
