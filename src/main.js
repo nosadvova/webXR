@@ -1,4 +1,4 @@
-import "./style.css"
+import "/style.css"
 
 document.getElementById("task1Btn").addEventListener("click", () => {
   setTimeout(() => {
