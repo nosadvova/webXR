@@ -179,9 +179,11 @@ function onSelect() {
       (gltf) => {
         const model = gltf.scene
 
-        model.position.setFromMatrixPosition(reticle.matrix)
+        const offset = new THREE.Vector3(0, 0, -0.3) // зсув на 30см вперед
+offset.applyMatrix4(reticle.matrix)
+model.position.copy(offset)
         model.quaternion.setFromRotationMatrix(reticle.matrix)
-        model.scale.set(0.5, 0.5, 0.5)
+        model.scale.set(0.3, 0.3, 0.3)
 
         // Зберігаємо базову позицію для анімації стрибків
         model.userData.basePosition = model.position.clone()
