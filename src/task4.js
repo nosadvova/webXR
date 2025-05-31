@@ -175,7 +175,7 @@ function onSelect() {
 
     const loader = new GLTFLoader()
     loader.load(
-      "https://ar-dinosaur-model.s3.eu-north-1.amazonaws.com/scene.gltf",
+      "https://row-of-plants.s3.us-east-1.amazonaws.com/3D+Plants+Pack/scene.gltf",
       (gltf) => {
         const model = gltf.scene
 
