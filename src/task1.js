@@ -1,10 +1,11 @@
-import * as THREE from "three"
+// Варіант №17 — заміна фігур на CircleGeometry, OctahedronGeometry, TubeGeometry
 
+import * as THREE from "three"
 import { ARButton } from "three/addons/webxr/ARButton.js"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
 let camera, scene, renderer
-let sphereMesh, cylinderMesh, planeMesh, glowParticles
+let circleMesh, octahedronMesh, tubeMesh, glowParticles
 let controls
 
 let rotationEnabled = true
@@ -17,29 +18,19 @@ let specialEffectActive = false
 let specialEffectTimer = 0
 
 const textureLoader = new THREE.TextureLoader()
-
 let texture1, texture2, texture3
 
-textureLoader.load(
-  "https://threejs.org/examples/textures/brick_diffuse.jpg",
-  (t1) => {
-    texture1 = t1
-    textureLoader.load(
-      "https://threejs.org/examples/textures/uv_grid_opengl.jpg",
-      (t2) => {
-        texture2 = t2
-        textureLoader.load(
-          "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
-          (t3) => {
-            texture3 = t3
-            init()
-            animate()
-          }
-        )
-      }
-    )
-  }
-)
+textureLoader.load("https://threejs.org/examples/textures/brick_diffuse.jpg", (t1) => {
+  texture1 = t1
+  textureLoader.load("https://threejs.org/examples/textures/uv_grid_opengl.jpg", (t2) => {
+    texture2 = t2
+    textureLoader.load("https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg", (t3) => {
+      texture3 = t3
+      init()
+      animate()
+    })
+  })
+})
 
 const emissiveMetalicMaterial = new THREE.MeshStandardMaterial({
   color: 0x7f42f5,
@@ -90,12 +81,7 @@ function init() {
   document.body.appendChild(container)
 
   scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    40
-  )
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 40)
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -111,45 +97,31 @@ function init() {
   scene.add(dir)
   scene.add(new THREE.AmbientLight(0xffffff, 1.2))
 
-  sphereMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.8),
-    emissiveMetalicMaterialTexture
-  )
-  sphereMesh.position.set(-1.5, 0, -5)
-  scene.add(sphereMesh)
+  circleMesh = new THREE.Mesh(new THREE.CircleGeometry(0.8, 32), emissiveMetalicMaterialTexture)
+  circleMesh.rotation.x = -Math.PI / 2
+  circleMesh.material.side = THREE.DoubleSide
+  circleMesh.position.set(-1.5, 0, -5)
+  scene.add(circleMesh)
 
-  cylinderMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.5, 0.5, 2),
-    rigidMaterialTexture
-  )
-  cylinderMesh.position.set(0, 0, -5)
-  scene.add(cylinderMesh)
+  octahedronMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.8), rigidMaterialTexture)
+  octahedronMesh.position.set(0, 0, -5)
+  scene.add(octahedronMesh)
 
-  planeMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1),
-    greenWireframeTexture
-  )
-  planeMesh.position.set(1.5, 0, -5)
-  scene.add(planeMesh)
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 1, 0.5),
+    new THREE.Vector3(1, 1, 0),
+  ])
+  tubeMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 64, 0.1, 8, false), greenWireframeTexture)
+  tubeMesh.position.set(1.5, 0, -5)
+  scene.add(tubeMesh)
 
-  // Cool special effect: glowing particles
   const glowGeometry = new THREE.BufferGeometry()
   const glowCount = 100
   const glowPositions = new Float32Array(glowCount * 3)
-  for (let i = 0; i < glowCount * 3; i++) {
-    glowPositions[i] = (Math.random() - 0.5) * 10
-  }
-  glowGeometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(glowPositions, 3)
-  )
-  const glowMaterial = new THREE.PointsMaterial({
-    color: 0xffffaa,
-    size: 0.2,
-    transparent: true,
-    opacity: 0,
-  })
-  glowParticles = new THREE.Points(glowGeometry, glowMaterial)
+  for (let i = 0; i < glowCount * 3; i++) glowPositions[i] = (Math.random() - 0.5) * 10
+  glowGeometry.setAttribute("position", new THREE.BufferAttribute(glowPositions, 3))
+  glowParticles = new THREE.Points(glowGeometry, new THREE.PointsMaterial({ color: 0xffffaa, size: 0.2, transparent: true, opacity: 0 }))
   scene.add(glowParticles)
 
   camera.position.z = 3
@@ -190,16 +162,16 @@ function render() {
   const time = performance.now() * 0.001 * speed
 
   if (rotationEnabled) {
-    sphereMesh.rotation.y += 0.01 * rotationDirection * speed
-    cylinderMesh.rotation.x += 0.01 * rotationDirection * speed
-    planeMesh.rotation.z += 0.01 * rotationDirection * speed
+    circleMesh.rotation.y += 0.01 * rotationDirection * speed
+    octahedronMesh.rotation.x += 0.01 * rotationDirection * speed
+    tubeMesh.rotation.z += 0.01 * rotationDirection * speed
   }
 
   if (pulseMoveEnabled) {
     const scale = 1 + 0.1 * Math.sin(time * 2)
-    sphereMesh.scale.set(scale, scale, scale)
-    cylinderMesh.scale.set(scale, scale, scale)
-    planeMesh.scale.set(scale, scale, scale)
+    circleMesh.scale.set(scale, scale, scale)
+    octahedronMesh.scale.set(scale, scale, scale)
+    tubeMesh.scale.set(scale, scale, scale)
   }
 
   if (colorEmitEnabled) {
@@ -207,11 +179,7 @@ function render() {
     emissiveMetalicMaterial.emissive.setHSL(0.75, 1, 0.5 + 0.2 * Math.sin(time))
     emissiveMetalicMaterial.emissiveIntensity = glow
     if (emissiveMetalicMaterialTexture) {
-      emissiveMetalicMaterialTexture.emissive.setHSL(
-        0.75,
-        1,
-        0.5 + 0.2 * Math.sin(time)
-      )
+      emissiveMetalicMaterialTexture.emissive.setHSL(0.75, 1, 0.5 + 0.2 * Math.sin(time))
       emissiveMetalicMaterialTexture.emissiveIntensity = glow
     }
   }
@@ -219,12 +187,12 @@ function render() {
   if (specialEffectActive) {
     specialEffectTimer += 0.01 * speed
     const flicker = Math.abs(Math.sin(specialEffectTimer * 10))
-    planeMesh.material.opacity = 0.3 + 0.7 * flicker
-    planeMesh.material.transparent = true
+    tubeMesh.material.opacity = 0.3 + 0.7 * flicker
+    tubeMesh.material.transparent = true
     glowParticles.material.opacity = 1 - specialEffectTimer / 5
     if (specialEffectTimer > 5) {
       specialEffectActive = false
-      planeMesh.material.opacity = 1
+      tubeMesh.material.opacity = 1
       glowParticles.material.opacity = 0
     }
   }
@@ -238,15 +206,13 @@ function toggleTextures() {
   if (btn)
     btn.textContent = texturesEnabled ? "Disable Textures" : "Enable Textures"
 
-  sphereMesh.material = texturesEnabled
-    ? emissiveMetalicMaterialTexture
-    : emissiveMetalicMaterial
-  cylinderMesh.material = texturesEnabled ? rigidMaterialTexture : rigidMaterial
-  planeMesh.material = texturesEnabled ? greenWireframeTexture : greenWireframe
+  circleMesh.material = texturesEnabled ? emissiveMetalicMaterialTexture : emissiveMetalicMaterial
+  octahedronMesh.material = texturesEnabled ? rigidMaterialTexture : rigidMaterial
+  tubeMesh.material = texturesEnabled ? greenWireframeTexture : greenWireframe
 
-  sphereMesh.material.needsUpdate = true
-  cylinderMesh.material.needsUpdate = true
-  planeMesh.material.needsUpdate = true
+  circleMesh.material.needsUpdate = true
+  octahedronMesh.material.needsUpdate = true
+  tubeMesh.material.needsUpdate = true
 }
 
 function safeAddEventListener(id, handler) {
@@ -263,43 +229,31 @@ function backToMenu() {
 function toggleRotation() {
   rotationEnabled = !rotationEnabled
   const btn = document.getElementById("toggleRotationBtn")
-  if (btn)
-    btn.textContent = rotationEnabled ? "Disable Rotation" : "Enable Rotation"
+  if (btn) btn.textContent = rotationEnabled ? "Disable Rotation" : "Enable Rotation"
 }
 
 function togglePulseMove() {
   pulseMoveEnabled = !pulseMoveEnabled
   const btn = document.getElementById("togglePulseBtn")
-  if (btn)
-    btn.textContent = pulseMoveEnabled
-      ? "Disable Pulse/Move"
-      : "Enable Pulse/Move"
+  if (btn) btn.textContent = pulseMoveEnabled ? "Disable Pulse/Move" : "Enable Pulse/Move"
 }
 
 function toggleColorEmit() {
   colorEmitEnabled = !colorEmitEnabled
   const btn = document.getElementById("toggleColorBtn")
-  if (btn)
-    btn.textContent = colorEmitEnabled
-      ? "Disable Color/Emit"
-      : "Enable Color/Emit"
+  if (btn) btn.textContent = colorEmitEnabled ? "Disable Color/Emit" : "Enable Color/Emit"
 }
 
 function toggleSpeed() {
   speedMode = speedMode === "normal" ? "fast" : "normal"
   const btn = document.getElementById("toggleSpeedBtn")
-  if (btn)
-    btn.textContent = `Speed: ${
-      speedMode.charAt(0).toUpperCase() + speedMode.slice(1)
-    }`
+  if (btn) btn.textContent = `Speed: ${speedMode.charAt(0).toUpperCase() + speedMode.slice(1)}`
 }
 
 function toggleDirection() {
   rotationDirection *= -1
   const btn = document.getElementById("toggleDirectionBtn")
-  if (btn)
-    btn.textContent =
-      rotationDirection === 1 ? "Direction: Forward" : "Direction: Backward"
+  if (btn) btn.textContent = rotationDirection === 1 ? "Direction: Forward" : "Direction: Backward"
 }
 
 function triggerSpecialEffect() {

@@ -10,42 +10,32 @@
   <body>
     <div id="controls">
       <div class="button-group-t1">
-        <button onclick="playClickSound()" id="backBtn" class="task2-button">
+        <button id="backBtn" class="task2-button">
           Back to Menu
         </button>
-        <button onclick="playClickSound()" id="toggleRotationBtn">
+        <button id="toggleRotationBtn">
           Disable Rotation
         </button>
-        <button onclick="playClickSound()" id="togglePulseBtn">
+        <button id="togglePulseBtn">
           Disable Pulse/Move
         </button>
-        <button onclick="playClickSound()" id="toggleColorBtn">
+        <button id="toggleColorBtn">
           Disable Color/Emit
         </button>
-        <button onclick="playClickSound()" id="toggleSpeedBtn">
+        <button id="toggleSpeedBtn">
           Speed: Normal
         </button>
-        <button onclick="playClickSound()" id="toggleTexturesBtn">
+        <button id="toggleTexturesBtn">
           Disable Textures
         </button>
-        <button onclick="playClickSound()" id="toggleDirectionBtn">
+        <button id="toggleDirectionBtn">
           Direction: Forward
         </button>
-        <button onclick="playClickSound()" id="specialEffectBtn">
+        <button id="specialEffectBtn">
           Special Effect
         </button>
       </div>
     </div>
-    <audio id="button_click_audio" src="/public/minecraft_click.mp3"></audio>
-    <script>
-      const baseAudio = document.getElementById("button_click_audio")
-
-      function playClickSound() {
-        const clone = baseAudio.cloneNode()
-        clone.volume = 1.0
-        clone.play()
-      }
-    </script>
     <script type="module" src="src/task1.js"></script>
   </body>
 </html>

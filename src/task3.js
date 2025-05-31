@@ -138,7 +138,7 @@ function addReticleToScene() {
 
 function onSelect() {
   if (reticle.visible) {
-    const geometry = new THREE.ConeGeometry(0.1, 0.2, 32)
+    const geometry = new THREE.DodecahedronGeometry(0.1)
     const material = materials[currentMaterialIndex].clone()
     const cone = new THREE.Mesh(geometry, material)
     material.color.setHex(currentColor)

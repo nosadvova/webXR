@@ -1,44 +1,52 @@
-import * as THREE from "three"
+import * as THREE from "three";
 
-import { ARButton } from "three/addons/webxr/ARButton.js"
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
+import { ARButton } from "three/addons/webxr/ARButton.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-let camera, scene, renderer
-let loader
-let model
-let reticle
-let hitTestSource = null
-let hitTestSourceRequested = false
-let modelPlaced = false
+let camera, scene, renderer;
+let loader;
+let model;
+let reticle;
+let hitTestSource = null;
+let hitTestSourceRequested = false;
+let modelPlaced = false;
 
 // Освітлення
-let sceneAmbientLight, modelLight
-let sceneLightEnabled = true
-let modelLightEnabled = true
-let modelLightType = "point"
-let modelLightIntensity = 5
-let modelLightColor = 0xffffff
+let sceneAmbientLight, modelLight;
+let sceneLightEnabled = true;
+let modelLightEnabled = true;
+let modelLightType = "point";
+let modelLightIntensity = 5;
+let modelLightColor = 0xffffff;
 
 // Стани
-let rotationEnabled = true
-let rotationAxis = "y"
-let originalMaterials = new Map()
-let materials = {}
-let currentMaterial = "original"
-let controlsVisible = false
+let rotationEnabled = true;
+let rotationAxis = "y";
+let originalMaterials = new Map();
+let materials = {};
+let currentMaterial = "original";
+let controlsVisible = false;
 
-const modelUrl =
-  "https://little-tokyo-model.s3.eu-north-1.amazonaws.com/scene.gltf"
+const modelUrl = "https://various-planets.s3.us-east-1.amazonaws.com/scene.gltf";
 
-init()
-animate()
+init();
+animate();
 
 function init() {
-  const container = document.createElement("div")
-  document.body.appendChild(container)
+  const container = document.createElement("div");
+  document.body.appendChild(container);
 
   // Сцена
-  scene = new THREE.Scene()
+  scene = new THREE.Scene();
+
+  // const loader = new THREE.TextureLoader();
+  // loader.load(
+  //   "https://unblast.com/wp-content/uploads/2021/01/Space-Background-Images.jpg",
+  //   function (texture) {
+  //     texture.mapping = THREE.EquirectangularReflectionMapping;
+  //     scene.background = texture;
+  //   }
+  // );
 
   // Камера
   camera = new THREE.PerspectiveCamera(
@@ -46,182 +54,185 @@ function init() {
     window.innerWidth / window.innerHeight,
     1,
     4000
-  )
+  );
 
   // Рендеринг
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.outputEncoding = THREE.sRGBEncoding
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.xr.enabled = true
-  container.appendChild(renderer.domElement)
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+  container.appendChild(renderer.domElement);
 
   // Освітлення для сцени
-  sceneAmbientLight = new THREE.AmbientLight(0xffffff, 1.5)
-  scene.add(sceneAmbientLight)
+  sceneAmbientLight = new THREE.AmbientLight(0xffffff, 1.5);
+  scene.add(sceneAmbientLight);
 
   // Початкове освітлення для моделі (Point Light)
-  modelLight = new THREE.PointLight(0xffffff, modelLightIntensity, 10)
-  scene.add(modelLight)
+  modelLight = new THREE.PointLight(0xffffff, modelLightIntensity, 10);
+  scene.add(modelLight);
 
   // Мітка для Hit Test
-  const reticleGeometry = new THREE.RingGeometry(0.15, 0.2, 32)
+  const reticleGeometry = new THREE.RingGeometry(0.15, 0.2, 32);
   const reticleMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     transparent: true,
     opacity: 0.5,
-  })
-  reticle = new THREE.Mesh(reticleGeometry, reticleMaterial)
-  reticle.matrixAutoUpdate = false
-  reticle.visible = false
-  scene.add(reticle)
+  });
+  reticle = new THREE.Mesh(reticleGeometry, reticleMaterial);
+  reticle.matrixAutoUpdate = false;
+  reticle.visible = false;
+  scene.add(reticle);
 
   // Завантаження моделі
-  loadModel(modelUrl)
+  loadModel(modelUrl);
 
   // Налаштування AR-режиму з Hit Test
   const button = ARButton.createButton(renderer, {
     requiredFeatures: ["hit-test"],
     onSessionStarted: async (session) => {
-      renderer.domElement.style.background = "transparent"
-      document.getElementById("controls").style.display = "flex"
+      renderer.domElement.style.background = "transparent";
+      document.getElementById("controls").style.display = "flex";
       session.addEventListener("end", () => {
-        document.getElementById("controls").style.display = "flex"
-        modelPlaced = false
-        reticle.visible = false
-        if (model) model.visible = false
-      })
+        document.getElementById("controls").style.display = "flex";
+        modelPlaced = false;
+        reticle.visible = false;
+        if (model) model.visible = false;
+      });
 
       // Ініціалізація Hit Test
-      const viewerReferenceSpace = await session.requestReferenceSpace("viewer")
+      const viewerReferenceSpace = await session.requestReferenceSpace(
+        "viewer"
+      );
       hitTestSource = await session.requestHitTestSource({
         space: viewerReferenceSpace,
-      })
-      hitTestSourceRequested = true
+      });
+      hitTestSourceRequested = true;
     },
     onSessionEnded: () => {
-      document.getElementById("controls").style.display = "flex"
-      hitTestSourceRequested = false
-      hitTestSource = null
+      document.getElementById("controls").style.display = "flex";
+      hitTestSourceRequested = false;
+      hitTestSource = null;
     },
-  })
-  document.body.appendChild(button)
-  renderer.domElement.style.display = "block"
+  });
+  document.body.appendChild(button);
+  renderer.domElement.style.display = "block";
 
   // Додаємо Listener для кнопок
-  document.getElementById("backBtn").addEventListener("click", backToMenu)
+  document.getElementById("backBtn").addEventListener("click", backToMenu);
   document
     .getElementById("toggleRotationBtn")
-    .addEventListener("click", toggleRotation)
+    .addEventListener("click", toggleRotation);
   document.getElementById("rotationAxis").addEventListener("change", (e) => {
-    rotationAxis = e.target.value
-  })
+    rotationAxis = e.target.value;
+  });
   document.getElementById("materialSelect").addEventListener("change", (e) => {
-    setMaterial(e.target.value)
-  })
+    setMaterial(e.target.value);
+  });
   document
     .getElementById("toggleSceneLightBtn")
-    .addEventListener("click", toggleSceneLight)
+    .addEventListener("click", toggleSceneLight);
   document
     .getElementById("toggleModelLightBtn")
-    .addEventListener("click", toggleModelLight)
+    .addEventListener("click", toggleModelLight);
   document.getElementById("modelLightType").addEventListener("change", (e) => {
-    modelLightType = e.target.value
-    updateModelLight()
-  })
+    modelLightType = e.target.value;
+    updateModelLight();
+  });
   document
     .getElementById("modelLightIntensity")
     .addEventListener("input", (e) => {
-      modelLightIntensity = parseFloat(e.target.value)
-      updateModelLight()
-    })
+      modelLightIntensity = parseFloat(e.target.value);
+      updateModelLight();
+    });
   document.getElementById("modelLightColor").addEventListener("input", (e) => {
-    modelLightColor = parseInt(e.target.value.replace("#", "0x"), 16)
-    updateModelLight()
-  })
+    modelLightColor = parseInt(e.target.value.replace("#", "0x"), 16);
+    updateModelLight();
+  });
 
   // Додаємо Listener для кнопки згортання/розгортання
   document
     .getElementById("toggleControlsBtn")
-    .addEventListener("click", toggleControls)
+    .addEventListener("click", toggleControls);
 
-  window.addEventListener("resize", onWindowResize, false)
+  window.addEventListener("resize", onWindowResize, false);
 }
 
 function backToMenu() {
   setTimeout(() => {
-    window.location.href = "../index.html"
-  }, 600)
+    window.location.href = "../index.html";
+  }, 600);
 }
 
 function toggleControls() {
-  controlsVisible = !controlsVisible
-  const controls = document.getElementById("controls")
-  const toggleBtn = document.getElementById("toggleControlsBtn")
+  controlsVisible = !controlsVisible;
+  const controls = document.getElementById("controls");
+  const toggleBtn = document.getElementById("toggleControlsBtn");
   if (controlsVisible) {
-    controls.classList.add("expanded")
-    toggleBtn.textContent = "Hide Controls"
+    controls.classList.add("expanded");
+    toggleBtn.textContent = "Hide Controls";
   } else {
-    controls.classList.remove("expanded")
-    toggleBtn.textContent = "Show Controls"
+    controls.classList.remove("expanded");
+    toggleBtn.textContent = "Show Controls";
   }
 }
 
 function loadModel(url) {
   if (model) {
-    scene.remove(model)
-    originalMaterials.clear()
+    scene.remove(model);
+    originalMaterials.clear();
   }
 
-  loader = new GLTFLoader()
+  loader = new GLTFLoader();
   loader.load(
     url,
     function (gltf) {
-      model = gltf.scene
-      model.position.z = -1000
-      // model.position.y = -5;
-      scene.add(model)
+      model = gltf.scene;
+      // model.position.z = -1000;
+      model.position.z = 0.1;
+      // model.position.x = -1;
+      scene.add(model);
 
       // Зберігаємо оригінальні матеріали
       model.traverse((child) => {
         if (child.isMesh) {
-          originalMaterials.set(child, child.material)
+          originalMaterials.set(child, child.material);
           if (child.material) {
-            child.material.side = THREE.DoubleSide
-            child.material.needsUpdate = true
+            child.material.side = THREE.DoubleSide;
+            child.material.needsUpdate = true;
             if (child.material.map) {
-              child.material.map.encoding = THREE.sRGBEncoding
-              child.material.map.flipY = false
+              child.material.map.encoding = THREE.sRGBEncoding;
+              child.material.map.flipY = false;
             }
             if (child.material.normalMap) {
-              child.material.normalMap.encoding = THREE.LinearEncoding
+              child.material.normalMap.encoding = THREE.LinearEncoding;
             }
             if (child.material.roughnessMap) {
-              child.material.roughnessMap.encoding = THREE.LinearEncoding
+              child.material.roughnessMap.encoding = THREE.LinearEncoding;
             }
             if (child.material.metalnessMap) {
-              child.material.metalnessMap.encoding = THREE.LinearEncoding
+              child.material.metalnessMap.encoding = THREE.LinearEncoding;
             }
           }
         }
-      })
+      });
 
       // Ініціалізуємо матеріали
       materials.gold = new THREE.MeshStandardMaterial({
         color: 0xffd700,
         metalness: 1,
         roughness: 0.1,
-      })
+      });
       materials.silver = new THREE.MeshStandardMaterial({
         color: 0xc0c0c0,
         metalness: 1,
         roughness: 0.2,
-      })
+      });
       materials.emerald = new THREE.MeshStandardMaterial({
         color: 0x50c878,
         metalness: 0.3,
         roughness: 0.5,
-      })
+      });
       materials.glass = new THREE.MeshPhysicalMaterial({
         color: 0x88ccff,
         transparent: true,
@@ -229,68 +240,68 @@ function loadModel(url) {
         roughness: 0,
         metalness: 0.1,
         transmission: 0.9,
-      })
+      });
 
       // Повертаємо поточний матеріал після завантаження
-      setMaterial(currentMaterial)
-      console.log("Model added to scene:", url)
+      setMaterial(currentMaterial);
+      console.log("Model added to scene:", url);
     },
     function (xhr) {
-      console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
     },
     function (error) {
-      console.error("Error loading model:", error)
+      console.error("Error loading model:", error);
     }
-  )
+  );
 }
 
 function toggleRotation() {
-  rotationEnabled = !rotationEnabled
+  rotationEnabled = !rotationEnabled;
   document.getElementById("toggleRotationBtn").textContent = rotationEnabled
     ? "Disable Rotation"
-    : "Enable Rotation"
+    : "Enable Rotation";
 }
 
 function setMaterial(type) {
-  if (!model) return
-  currentMaterial = type
+  if (!model) return;
+  currentMaterial = type;
   model.traverse((child) => {
     if (child.isMesh) {
       if (type === "original") {
-        child.material = originalMaterials.get(child)
+        child.material = originalMaterials.get(child);
       } else {
-        child.material = materials[type]
+        child.material = materials[type];
       }
-      child.material.needsUpdate = true
+      child.material.needsUpdate = true;
     }
-  })
-  document.getElementById("materialSelect").value = currentMaterial
+  });
+  document.getElementById("materialSelect").value = currentMaterial;
 }
 
 function toggleSceneLight() {
-  sceneLightEnabled = !sceneLightEnabled
-  sceneAmbientLight.visible = sceneLightEnabled
+  sceneLightEnabled = !sceneLightEnabled;
+  sceneAmbientLight.visible = sceneLightEnabled;
   document.getElementById("toggleSceneLightBtn").textContent = sceneLightEnabled
     ? "Scene Light: On"
-    : "Scene Light: Off"
+    : "Scene Light: Off";
 }
 
 function toggleModelLight() {
-  modelLightEnabled = !modelLightEnabled
-  modelLight.visible = modelLightEnabled
+  modelLightEnabled = !modelLightEnabled;
+  modelLight.visible = modelLightEnabled;
   document.getElementById("toggleModelLightBtn").textContent = modelLightEnabled
     ? "Model Light: On"
-    : "Model Light: Off"
+    : "Model Light: Off";
 }
 
 function updateModelLight() {
-  scene.remove(modelLight)
+  scene.remove(modelLight);
   if (modelLightType === "point") {
     modelLight = new THREE.PointLight(
       modelLightColor,
       modelLightIntensity,
       1000
-    )
+    );
   } else if (modelLightType === "spot") {
     modelLight = new THREE.SpotLight(
       modelLightColor,
@@ -298,89 +309,89 @@ function updateModelLight() {
       1000,
       Math.PI / 4,
       0.5
-    )
-    modelLight.target = model
+    );
+    modelLight.target = model;
   } else if (modelLightType === "directional") {
     modelLight = new THREE.DirectionalLight(
       modelLightColor,
       modelLightIntensity
-    )
-    modelLight.position.set(1000, 1000, 1000)
+    );
+    modelLight.position.set(1000, 1000, 1000);
   }
-  modelLight.visible = modelLightEnabled
-  scene.add(modelLight)
+  modelLight.visible = modelLightEnabled;
+  scene.add(modelLight);
 }
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function animate() {
-  renderer.setAnimationLoop(render)
+  renderer.setAnimationLoop(render);
 }
 
 function render() {
   if (renderer.xr.isPresenting && hitTestSourceRequested && hitTestSource) {
-    const frame = renderer.xr.getFrame()
-    const hitTestResults = frame.getHitTestResults(hitTestSource)
+    const frame = renderer.xr.getFrame();
+    const hitTestResults = frame.getHitTestResults(hitTestSource);
     if (hitTestResults.length > 0 && !modelPlaced) {
-      const hit = hitTestResults[0]
-      const hitPose = hit.getPose(renderer.xr.getReferenceSpace())
-      reticle.visible = true
-      reticle.matrix.fromArray(hitPose.transform.matrix)
+      const hit = hitTestResults[0];
+      const hitPose = hit.getPose(renderer.xr.getReferenceSpace());
+      reticle.visible = true;
+      reticle.matrix.fromArray(hitPose.transform.matrix);
 
       // Розміщення моделі при натисканні
-      renderer.domElement.addEventListener("click", placeModel, { once: true })
+      renderer.domElement.addEventListener("click", placeModel, { once: true });
     } else {
-      reticle.visible = false
+      reticle.visible = false;
     }
   }
 
-  rotateModel()
-  updateModelLightPosition()
-  renderer.render(scene, camera)
+  rotateModel();
+  updateModelLightPosition();
+  renderer.render(scene, camera);
 }
 
 function placeModel() {
   if (reticle.visible && model) {
-    model.matrixAutoUpdate = true
-    model.position.setFromMatrixPosition(reticle.matrix)
-    model.rotation.setFromRotationMatrix(reticle.matrix)
-    model.visible = true
-    modelPlaced = true
-    reticle.visible = false
+    model.matrixAutoUpdate = true;
+    model.position.setFromMatrixPosition(reticle.matrix);
+    model.rotation.setFromRotationMatrix(reticle.matrix);
+    model.visible = true;
+    modelPlaced = true;
+    reticle.visible = false;
   }
 }
 
 function updateModelLightPosition() {
   if (model && modelLight && modelLightType !== "directional") {
-    const modelPosition = new THREE.Vector3()
-    model.getWorldPosition(modelPosition)
+    const modelPosition = new THREE.Vector3();
+    model.getWorldPosition(modelPosition);
     modelLight.position.set(
       modelPosition.x + 2,
       modelPosition.y + 2,
       modelPosition.z + 2
-    )
+    );
     if (modelLightType === "spot") {
-      modelLight.target = model
+      modelLight.target = model;
     }
   }
 }
 
-let degrees = 0
+let degrees = 0;
 
 function rotateModel() {
   if (model && rotationEnabled) {
-    degrees += 0.2
-    const rad = THREE.MathUtils.degToRad(degrees)
+    degrees += 0.2;
+    const rad = THREE.MathUtils.degToRad(degrees);
     if (rotationAxis === "x") {
-      model.rotation.x = rad
+      model.rotation.x = rad;
     } else if (rotationAxis === "y") {
-      model.rotation.y = rad
+      model.rotation.y = rad;
     } else if (rotationAxis === "z") {
-      model.rotation.z = rad
+      model.rotation.z = rad;
     }
   }
 }
